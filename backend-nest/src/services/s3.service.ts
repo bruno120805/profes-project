@@ -45,7 +45,7 @@ export class S3Service {
 
     await this.client.send(command);
 
-    return `https://${this.bucketName}.s3.amazonaws.com/${key}`;
+    return `https://${this.bucketName}.s3.amazonaws.com/${key}.${fileExtension}`;
   }
 
   async getSignedUrl(key: string, extension: string): Promise<string> {

@@ -69,7 +69,7 @@ export class NotesController {
   }
 
   @Delete(':noteId')
-  remove(@Param('id') id: string) {
+  remove(@Param('noteId', ParseUUIDPipe) id: string) {
     return this.notesService.remove(id);
   }
 }
