@@ -58,7 +58,7 @@ export class NotesService {
     return `This action updates a #${id} note`;
   }
 
-  remove(id: number) {
+  remove(id: string) {
     return `This action removes a #${id} note`;
   }
 }
