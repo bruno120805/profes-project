@@ -9,17 +9,16 @@ import {
   Patch,
   Post,
   Req,
-  UploadedFile,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { Request } from 'express';
+import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
+import { CreateNoteDto } from './dto/create-note.dto';
 import { UpdateNoteDto } from './dto/update-note.dto';
 import { NotesService } from './notes.service';
-import { CreateNoteDto } from './dto/create-note.dto';
-import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
-import { Request } from 'express';
 
 @Controller('notes')
 export class NotesController {
@@ -43,6 +42,12 @@ export class NotesController {
     @Req() req: Request,
   ) {
     const userId = req.user['userId'];
+
+    if (
+      files.map((file) => file.size).reduce((a, b) => a + b, 0) >
+      1024 * 1024 * 2
+    )
+      throw new BadRequestException('Files too large, max size 2MB');
 
     if (!files) throw new BadRequestException('No files uploaded');
     return this.notesService.uploadFilesNotes(
