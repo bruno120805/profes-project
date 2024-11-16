@@ -58,7 +58,10 @@ export class NotesService {
     return `This action updates a #${id} note`;
   }
 
-  remove(id: string) {
-    return `This action removes a #${id} note`;
+  async remove(id: string) {
+    const note = await this.prisma.notes.findUnique({
+      where: { id },
+      select: { filesUrls: true },
+    });
   }
 }
