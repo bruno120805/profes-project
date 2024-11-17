@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
-import { S3Service } from 'src/services/s3.service';
-import { UpdateNoteDto } from './dto/update-note.dto';
-import { v4 } from 'uuid';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { S3Service } from 'src/services/s3.service';
+import { v4 } from 'uuid';
 import { CreateNoteDto } from './dto/create-note.dto';
+import { UpdateNoteDto } from './dto/update-note.dto';
 
 @Injectable()
 export class NotesService {
@@ -58,10 +58,29 @@ export class NotesService {
     return `This action updates a #${id} note`;
   }
 
+  private readonly deleteFiles = async (filesUrls: string[]) => {
+    for (const file of filesUrls) {
+      const key = file.split('.')[0];
+      const extension = file.split('.').pop();
+      await this.s3.delete(key, extension);
+    }
+  };
+
   async remove(id: string) {
-    const note = await this.prisma.notes.findUnique({
+    // Find the note
+    const notes = await this.prisma.notes.findUnique({
       where: { id },
-      select: { filesUrls: true },
     });
+
+    if (!notes) throw new NotFoundException('Note not found');
+
+    const filesUrls = notes.filesUrls.map((url) => url.split('/').pop());
+    await this.deleteFiles(filesUrls);
+
+    await this.prisma.notes.delete({
+      where: { id },
+    });
+
+    return 'Note deleted successfully';
   }
 }
