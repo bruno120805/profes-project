@@ -22,6 +22,7 @@ model User {
   post          Post[]
   roles         String[]       @default(["user"])
   notes         Notes[]
+  likes         Likes[]
 }
 
 model RefreshToken {
@@ -33,17 +34,33 @@ model RefreshToken {
   expiresAt DateTime
 }
 
+model Likes {
+  id     String @id @default(uuid())
+  userId String
+  noteId String
+  user   User   @relation(fields: [userId], references: [id])
+  note   Notes  @relation(fields: [noteId], references: [id])
+
+  @@unique([userId, noteId])
+}
+
 model Notes {
-  id           String      @id @default(uuid())
-  subject      String
-  title        String
-  content      String
-  filesUrls      String[] 
-  createdAt    DateTime    @default(now())
-  userId       String
-  user         User        @relation(fields: [userId], references: [id])
+  id String @id @default(uuid())
+
+  subject String
+  title   String
+  content String
+
+  filesUrls String[]
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
   Proffessor   Proffessor? @relation(fields: [proffessorId], references: [id])
   proffessorId String?
+
+  createdAt DateTime @default(now())
+  likes     Likes[]
 }
 
 model Post {
