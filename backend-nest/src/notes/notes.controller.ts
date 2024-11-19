@@ -17,7 +17,6 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { Request } from 'express';
 import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
 import { CreateNoteDto } from './dto/create-note.dto';
-import { UpdateNoteDto } from './dto/update-note.dto';
 import { NotesService } from './notes.service';
 
 @Controller('notes')
@@ -58,16 +57,42 @@ export class NotesController {
     );
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.notesService.findOne(+id);
+  @UseGuards(JwtAuthGuard)
+  @Post(':noteId')
+  likeNote(
+    @Param('noteId', ParseUUIDPipe) noteId: string,
+    @Req() req: Request,
+  ) {
+    const userId = req.user['userId'];
+
+    return this.notesService.likeNote(noteId, userId);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateNoteDto: UpdateNoteDto) {
-    return this.notesService.update(+id, updateNoteDto);
+  @UseGuards(JwtAuthGuard)
+  @Patch(':noteId')
+  unlikeNote(
+    @Param('noteId', ParseUUIDPipe) noteId: string,
+    @Req() req: Request,
+  ) {
+    const userId = req.user['userId'];
+
+    return this.notesService.unlikeNote(noteId, userId);
   }
 
+  @Get(':noteId')
+  getNoteLikes(@Param('noteId', ParseUUIDPipe) noteId: string) {
+    return this.notesService.getNoteLikes(noteId);
+  }
+
+  // @Get(':id')
+  // findOne(@Param('id') id: string) {
+  //   return this.notesService.findOne(+id);
+  // }
+
+  // @Patch(':id')
+  // update(@Param('id') id: string, @Body() updateNoteDto: UpdateNoteDto) {
+  //   return this.notesService.update(+id, updateNoteDto);
+  // }
   @Delete(':noteId')
   remove(@Param('noteId', ParseUUIDPipe) id: string) {
     return this.notesService.remove(id);
