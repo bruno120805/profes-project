@@ -14,15 +14,17 @@ datasource db {
 }
 
 model User {
-  id            String         @id @default(uuid())
-  displayName   String
-  email         String         @unique
-  password      String?
-  refreshTokens RefreshToken[]
-  post          Post[]
-  roles         String[]       @default(["user"])
-  notes         Notes[]
-  likes         Likes[]
+  id                  String         @id @default(uuid())
+  displayName         String
+  email               String         @unique
+  password            String?
+  expirationToken     String?
+  expirationTokenDate DateTime?
+  refreshTokens       RefreshToken[]
+  post                Post[]
+  roles               String[]       @default(["user"])
+  notes               Notes[]
+  likes               Likes[]
 }
 
 model RefreshToken {

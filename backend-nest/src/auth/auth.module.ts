@@ -8,6 +8,7 @@ import { SessionSerializer } from './utils/Serializer';
 import { JwtStrategy } from './utils/jwt-strategy';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
+import { MailService } from 'src/services/mail-service.service';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { PassportModule } from '@nestjs/passport';
     AuthService,
     JwtStrategy,
     PrismaService,
+    MailService,
     {
       provide: 'AUTH_SERVICE',
       useClass: AuthService,

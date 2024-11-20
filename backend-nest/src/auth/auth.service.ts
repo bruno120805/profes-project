@@ -5,12 +5,15 @@ import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { TokenDto } from './dto/token.dto';
 import * as crypto from 'crypto';
+import { LoginDto } from './dto/login.dto';
+import { MailService } from 'src/services/mail-service.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
+    private readonly mailService: MailService,
   ) {}
 
   signToken(payload: TokenDto) {
@@ -138,5 +141,69 @@ export class AuthService {
       userId: user.id,
     });
     return { accessToken: newAccessToken };
+  }
+
+  async forgotPassword(email: LoginDto['email']) {
+    // esta funcion se va a hacer cargo de mandar el codigo a su correo del usuario
+    const userEmail = await this.prisma.user.findUnique({
+      where: { email: email },
+    });
+
+    if (!userEmail)
+      throw new BadRequestException(
+        'User not found, you might want to create one',
+      );
+
+    //creamos el codigo de recuperacion
+    const token = crypto.randomBytes(4).toString('hex');
+    const tokenExpiration = new Date();
+    tokenExpiration.setHours(tokenExpiration.getHours() + 1); // expira en una hora
+
+    await this.prisma.user.update({
+      where: { email },
+      data: {
+        expirationToken: token,
+        expirationTokenDate: tokenExpiration,
+      },
+    });
+
+    return await this.mailService.sendEmail({
+      to: email,
+      subject: 'Password reset',
+      text: `Your password reset code is: ${token}`,
+    });
+  }
+
+  async resetPassword(email: string, token: string, newPassword: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      throw new BadRequestException('Invalid email');
+    }
+
+    if (user.expirationToken !== token) {
+      throw new BadRequestException('Invalid token, try again');
+    }
+
+    const today = new Date();
+    if (user.expirationTokenDate && today > user.expirationTokenDate) {
+      throw new BadRequestException('Token expired, try again');
+    }
+
+    const newPasswordHashed = await bcrypt.hash(newPassword, 10);
+    await this.prisma.user.update({
+      where: {
+        email,
+      },
+      data: {
+        password: newPasswordHashed,
+        expirationTokenDate: null, // limpiamos el token de expiracion
+        expirationToken: null, // limpiamos el token
+      },
+    });
+
+    return { msg: 'Password updated successfully' };
   }
 }

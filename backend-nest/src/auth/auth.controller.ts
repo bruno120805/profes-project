@@ -4,6 +4,7 @@ import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { UserDetails } from './dto/user-details.dto';
 import { GoogleAuthGuard } from './guard/google.guard';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -42,5 +43,18 @@ export class AuthController {
     @Body('refreshToken') refreshToken: string,
   ) {
     return this.authService.renewAccessToken(refreshToken);
+  }
+
+  @Post('forgot-password')
+  forgotPassword(@Body('email') email: LoginDto['email']) {
+    return this.authService.forgotPassword(email);
+  }
+
+  @Post('reset-password')
+  resetPassword(
+    @Body()
+    { email, token, newPassword }: ResetPasswordDto,
+  ) {
+    return this.authService.resetPassword(email, token, newPassword);
   }
 }
