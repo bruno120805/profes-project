@@ -1,9 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { S3Service } from 'src/services/s3.service';
 import { v4 } from 'uuid';
 import { CreateNoteDto } from './dto/create-note.dto';
-import { UpdateNoteDto } from './dto/update-note.dto';
 
 @Injectable()
 export class NotesService {
@@ -50,13 +53,99 @@ export class NotesService {
     }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} note`;
+  async likeNote(noteId: string, userId: string) {
+    const note = await this.prisma.notes.findUnique({
+      where: { id: noteId },
+    });
+
+    if (!note) throw new NotFoundException('Note not found');
+
+    const existingLike = await this.prisma.likes.findUnique({
+      where: {
+        userId_noteId: { userId, noteId },
+      },
+    });
+
+    if (existingLike) {
+      throw new ConflictException('You already liked this post');
+    }
+
+    // crear el like
+
+    const like = await this.prisma.likes.create({
+      data: {
+        userId,
+        noteId,
+      },
+    });
+
+    await this.prisma.notes.update({
+      where: { id: noteId },
+      data: {
+        likesCounter: {
+          increment: 1,
+        },
+      },
+    });
+
+    return like;
   }
 
-  update(id: number, updateNoteDto: UpdateNoteDto) {
-    return `This action updates a #${id} note`;
+  async unlikeNote(noteId: string, userId: string) {
+    const like = await this.prisma.likes.findUnique({
+      where: {
+        userId_noteId: { userId, noteId },
+      },
+    });
+
+    const note = await this.prisma.notes.findUnique({
+      where: { id: noteId },
+    });
+
+    //TODO: CHECK IT, IT MAY BE A BUG
+    if (!like) {
+      // Si no existe el like, lanzar una excepción
+      throw new ConflictException(
+        'You cannot dislike a note that you have not liked',
+      );
+    }
+
+    await this.prisma.likes.delete({
+      where: {
+        userId_noteId: { userId, noteId },
+      },
+    });
+
+    if (note.likesCounter === 0) return;
+
+    await this.prisma.notes.update({
+      where: {
+        id: noteId,
+      },
+      data: {
+        likesCounter: {
+          decrement: 1,
+        },
+      },
+    });
   }
+
+  async getNoteLikes(noteId: string) {
+    return this.prisma.notes.findUnique({
+      where: { id: noteId },
+      select: {
+        likesCounter: true,
+      },
+    });
+  }
+
+  // findOne(id: number) {
+  //   return `This action returns a #${id} note`;
+  // }
+
+  // update(id: number, updateNoteDto: UpdateNoteDto) {
+  //   return `This action updates a #${id} note`;
+  // }
 
   private readonly deleteFiles = async (filesUrls: string[]) => {
     for (const file of filesUrls) {
