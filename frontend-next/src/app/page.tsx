@@ -1,6 +1,14 @@
+import ContentWrapper from "@/components/ContentWrapper"
+import MainNavigation from "@/components/MainNavigation"
+
 function HomePage() {
   return (
-    <div>Home page</div>
+    <div>
+
+      <MainNavigation>
+        testing
+      </MainNavigation>
+    </div>
   )
 }
 
