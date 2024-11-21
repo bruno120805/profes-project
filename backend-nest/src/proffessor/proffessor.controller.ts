@@ -1,18 +1,9 @@
-import {
-  Controller,
-  Get,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  Post,
-  Query,
-} from '@nestjs/common';
-import { ProffessorService } from './proffessor.service';
-import { UpdateProffessorDto } from './dto/update-proffessor.dto';
+import { Body, Controller, Delete, Param, Patch, Post } from '@nestjs/common';
 import { CreateProffessorDto } from './dto/create-proffessor.dto';
+import { UpdateProffessorDto } from './dto/update-proffessor.dto';
+import { ProffessorService } from './proffessor.service';
 
-@Controller('proffessor')
+@Controller('profesores')
 export class ProffessorController {
   constructor(private readonly proffessorService: ProffessorService) {}
 
@@ -22,16 +13,6 @@ export class ProffessorController {
     @Param('schoolId') schoolId: string,
   ) {
     return this.proffessorService.create(createProffessorDto, schoolId);
-  }
-
-  @Get()
-  findAll() {
-    return this.proffessorService.findAll();
-  }
-
-  @Get('buscar')
-  findByQuery(@Query('buscar') buscar: string, @Query('q') query: string) {
-    return this.proffessorService.findManyProfessors(buscar, query);
   }
 
   @Patch(':id')
