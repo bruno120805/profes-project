@@ -5,6 +5,12 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class SearchService {
   constructor(private readonly prisma: PrismaService) {}
   async findAllSchoolProfessors(schoolId: string, query: string) {
+    const school = await this.prisma.school.findUnique({
+      where: { id: schoolId },
+    });
+
+    if (!school) throw new NotFoundException('Escuela no encontrada');
+
     if (query) {
       const profesores = await this.prisma.proffessor.findMany({
         where: {
