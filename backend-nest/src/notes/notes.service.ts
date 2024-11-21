@@ -25,6 +25,12 @@ export class NotesService {
       files.map((file) => this.s3.upload(file, v4())),
     );
 
+    const professor = await this.prisma.proffessor.findUnique({
+      where: { id: professorId },
+    });
+
+    if (!professor) throw new NotFoundException('Profesor no encontrado');
+
     try {
       const notes = await this.prisma.$transaction(async (prisma) => {
         return prisma.notes.create({
@@ -35,8 +41,9 @@ export class NotesService {
               connect: { id: userId },
             },
             Proffessor: {
-              connect: { id: professorId },
+              connect: { id: professor.id },
             },
+            likesCounter: 0,
           },
           include: {
             Proffessor: {
