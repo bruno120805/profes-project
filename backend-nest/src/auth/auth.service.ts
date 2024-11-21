@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserDetails } from './dto/user-details.dto';
 import * as bcrypt from 'bcrypt';
@@ -82,35 +86,42 @@ export class AuthService {
       };
     } catch (error) {
       if (error instanceof BadRequestException) {
-        throw error;
+        throw new BadRequestException(error.message);
       }
-      throw new BadRequestException(error.message);
+      throw new InternalServerErrorException(error.message);
     }
   }
 
   async login(email: string, password: string) {
-    const user = await this.prisma.user.findUnique({ where: { email } });
+    try {
+      const user = await this.prisma.user.findUnique({ where: { email } });
 
-    if (!user || !user.password) {
-      throw new BadRequestException('Invalid credentials');
+      if (!user || !user.password) {
+        throw new BadRequestException('Invalid credentials');
+      }
+
+      const isPasswordValid = await bcrypt.compare(password, user.password);
+
+      if (!isPasswordValid) {
+        throw new BadRequestException('Invalid credentials');
+      }
+
+      const refreshToken = await this.generateRefreshToken(user.id);
+
+      return {
+        user,
+        accessToken: this.jwtService.sign({
+          email: user.email,
+          userId: user.id,
+        }),
+        refreshToken,
+      };
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw new BadRequestException(error.message);
+      }
+      throw new InternalServerErrorException(error.message);
     }
-
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-
-    if (!isPasswordValid) {
-      throw new BadRequestException('Invalid credentials');
-    }
-
-    const refreshToken = await this.generateRefreshToken(user.id);
-
-    return {
-      user,
-      accessToken: this.jwtService.sign({
-        email: user.email,
-        userId: user.id,
-      }),
-      refreshToken,
-    };
   }
 
   async generateRefreshToken(userId: string) {
