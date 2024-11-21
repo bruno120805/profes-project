@@ -1,13 +1,11 @@
-import ContentWrapper from "@/components/ContentWrapper"
+import Hero from "@/components/HomePage/Hero"
 import MainNavigation from "@/components/MainNavigation"
 
 function HomePage() {
   return (
     <div>
-
-      <MainNavigation>
-        testing
-      </MainNavigation>
+      <MainNavigation> </MainNavigation>
+      <Hero />
     </div>
   )
 }
