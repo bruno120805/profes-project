@@ -7,8 +7,8 @@ const inter = Inter({ subsets: ['latin'] });
 
 export function TypographyH1() {
   return (
-    <h1 className="max-w-4xl scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl -mt-5" style={{...inter.style}}>
-      Califica tu profesor y encuentra 
+    <h1 className="max-w-4xl scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl -mt-5" style={{ ...inter.style }}>
+      Califica tu profesor y encuentra
       los apuntes de sus materias.
     </h1>
   )
@@ -16,7 +16,7 @@ export function TypographyH1() {
 
 export function TypographyH4() {
   return (
-    <h4 className="scroll-m-20 text-xl font-semibold tracking-tight mt-3 " style={{...inter.style}}>
+    <h4 className="scroll-m-20 text-xl font-semibold tracking-tight mt-3 " style={{ ...inter.style }}>
       Escribe el nombre de la universidad
       para empezar.
     </h4>
@@ -36,7 +36,7 @@ const Hero = () => {
 
       </ContentWrapper>
 
-      <div 
+      <div
         className="
           absolute
           bg-cover

@@ -1,5 +1,6 @@
 import { Controller, Get, Param, ParseUUIDPipe, Query } from '@nestjs/common';
 import { SearchService } from './search.service';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
 
 @Controller('search')
 export class SearchController {
@@ -13,9 +14,10 @@ export class SearchController {
   @Get('profesores/:schoolId')
   findAllSchoolProfessors(
     @Param('schoolId', ParseUUIDPipe) schoolId: string,
-    @Query('q') query: string,
+    @Query() pagination: PaginationDto,
   ) {
-    return this.searchService.findAllSchoolProfessors(schoolId, query);
+    const { page, limit } = pagination;
+    return this.searchService.findAllSchoolProfessors(schoolId, page, limit);
   }
 
   @Get('profesor/professorId')

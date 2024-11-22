@@ -4,15 +4,36 @@ import { PrismaService } from 'src/prisma/prisma.service';
 @Injectable()
 export class SearchService {
   constructor(private readonly prisma: PrismaService) {}
-  async findAllSchoolProfessors(schoolId: string, query: string) {
-    if (query) {
-      const profesores = await this.prisma.proffessor.findMany({
-        where: {
-          schoolId,
-        },
-      });
-      return profesores;
-    }
+  async findAllSchoolProfessors(schoolId: string, page: number, limit: number) {
+    const school = await this.prisma.school.findUnique({
+      where: { id: schoolId },
+    });
+
+    if (!school) throw new NotFoundException('Escuela no encontrada');
+
+    // calcular profesores total en la escuela
+    const totalProfessors = await this.prisma.proffessor.count({
+      where: {
+        schoolId: school.id,
+      },
+    });
+
+    const lastPage = Math.ceil(totalProfessors / limit);
+
+    const profesores = await this.prisma.proffessor.findMany({
+      where: {
+        schoolId: school.id,
+      },
+      take: limit,
+      skip: (page - 1) * limit,
+    });
+
+    return {
+      data: profesores,
+      page,
+      limit,
+      lastPage,
+    };
   }
 
   async findOneProfessor(professorId: string) {
