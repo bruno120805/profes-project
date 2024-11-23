@@ -8,9 +8,11 @@ import { SchoolModule } from './school/school.module';
 import { PostModule } from './post/post.module';
 import { NotesModule } from './notes/notes.module';
 import { SearchModule } from './search/search.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
     AuthModule,
     PrismaModule,
     PassportModule.register({

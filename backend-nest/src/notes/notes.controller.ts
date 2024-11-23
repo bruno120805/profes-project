@@ -94,6 +94,7 @@ export class NotesController {
   // update(@Param('id') id: string, @Body() updateNoteDto: UpdateNoteDto) {
   //   return this.notesService.update(+id, updateNoteDto);
   // }
+
   @Delete(':noteId')
   remove(@Param('noteId', ParseUUIDPipe) id: string) {
     return this.notesService.remove(id);

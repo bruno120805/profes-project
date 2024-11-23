@@ -6,18 +6,19 @@ import {
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class S3Service {
   private client: S3Client;
   private bucketName: string;
-  constructor() {
-    this.bucketName = process.env.AWS_BUCKET_NAME;
+  constructor(configService: ConfigService) {
+    this.bucketName = configService.getOrThrow<string>('AWS_BUCKET_NAME');
     this.client = new S3Client({
-      region: process.env.AWS_REGION,
+      region: configService.getOrThrow<string>('AWS_REGION'),
       credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY,
-        secretAccessKey: process.env.AWS_SECRET_KEY,
+        accessKeyId: configService.getOrThrow<string>('AWS_ACCESS_KEY'),
+        secretAccessKey: configService.getOrThrow<string>('AWS_SECRET_KEY'),
       },
     });
   }

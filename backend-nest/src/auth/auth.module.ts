@@ -1,25 +1,19 @@
 import { Module } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { MailService } from 'src/services/mail-service.service';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { GoogleStrategy } from './utils/GoogleStrategy';
-import { SessionSerializer } from './utils/Serializer';
-import { JwtStrategy } from './utils/jwt-strategy';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { PassportModule } from '@nestjs/passport';
-import { MailService } from 'src/services/mail-service.service';
+import { GoogleStrategy } from './strategies/GoogleStrategy';
+import { SessionSerializer } from './strategies/Serializer';
+import { JwtStrategy } from './strategies/jwt-strategy';
+import { LocalStrategy } from './strategies/local.strategy';
+import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
 
 @Module({
-  imports: [
-    ConfigModule,
-    PassportModule.register({ defaultStrategy: 'jwt' }),
-    JwtModule.register({
-      global: true,
-      secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: '5h' },
-    }),
-  ],
+  imports: [PassportModule, JwtModule],
   controllers: [AuthController],
   providers: [
     ConfigService,
@@ -29,11 +23,13 @@ import { MailService } from 'src/services/mail-service.service';
     JwtStrategy,
     PrismaService,
     MailService,
+    LocalStrategy,
+    JwtRefreshStrategy,
     {
       provide: 'AUTH_SERVICE',
       useClass: AuthService,
     },
   ],
-  exports: [JwtStrategy, PassportModule, JwtModule],
+  exports: [JwtStrategy, PassportModule, JwtModule, JwtStrategy],
 })
 export class AuthModule {}
