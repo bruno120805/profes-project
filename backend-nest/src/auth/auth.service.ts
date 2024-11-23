@@ -10,7 +10,7 @@ import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { MailService } from 'src/services/mail-service.service';
 import { LoginDto } from './dto/login.dto';
@@ -210,7 +210,6 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
-  //TODO: MODIFICAR ESTE CODIGO DEL RESET PASSWORD
   async forgotPassword(email: LoginDto['email']) {
     // esta funcion se va a hacer cargo de mandar el codigo a su correo del usuario
     const userEmail = await this.prisma.user.findUnique({

@@ -9,6 +9,7 @@ import { PostModule } from './post/post.module';
 import { NotesModule } from './notes/notes.module';
 import { SearchModule } from './search/search.module';
 import { ConfigModule } from '@nestjs/config';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
@@ -23,8 +24,14 @@ import { ConfigModule } from '@nestjs/config';
     PostModule,
     NotesModule,
     SearchModule,
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 2,
+      },
+    ]),
   ],
   controllers: [],
-  providers: [],
+  providers: [ThrottlerGuard],
 })
 export class AppModule {}

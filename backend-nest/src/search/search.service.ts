@@ -4,7 +4,11 @@ import { PrismaService } from 'src/prisma/prisma.service';
 @Injectable()
 export class SearchService {
   constructor(private readonly prisma: PrismaService) {}
-  async findAllSchoolProfessors(schoolId: string, page: number, limit: number) {
+  async findAllSchoolProfessors(
+    schoolId: string,
+    page: number = 1,
+    limit: number = 10,
+  ) {
     const school = await this.prisma.school.findUnique({
       where: { id: schoolId },
     });
