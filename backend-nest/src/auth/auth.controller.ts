@@ -15,6 +15,8 @@ import { UserDetails } from './dto/user-details.dto';
 import { GoogleAuthGuard } from './guard/google.guard';
 import { JwtRefreshAuthGuard } from './guard/jwt-refresh.guard';
 import { LocalAuthGuard } from './guard/local-auth.guard';
+import { LoginDto } from './dto/login.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -66,16 +68,16 @@ export class AuthController {
     return this.authService.login(user, response);
   }
 
-  // @Post('forgot-password')
-  // forgotPassword(@Body('email') email: LoginDto['email']) {
-  //   return this.authService.forgotPassword(email);
-  // }
+  @Post('forgot-password')
+  forgotPassword(@Body('email') email: LoginDto['email']) {
+    return this.authService.forgotPassword(email);
+  }
 
-  // @Post('reset-password')
-  // resetPassword(
-  //   @Body()
-  //   { email, token, newPassword }: ResetPasswordDto,
-  // ) {
-  //   return this.authService.resetPassword(email, token, newPassword);
-  // }
+  @Post('reset-password')
+  resetPassword(
+    @Body()
+    { email, token, newPassword }: ResetPasswordDto,
+  ) {
+    return this.authService.resetPassword(email, token, newPassword);
+  }
 }

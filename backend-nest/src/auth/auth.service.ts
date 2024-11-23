@@ -36,7 +36,7 @@ export class AuthService {
       const user = await this.findUserById(userId);
       const isValidRefreshToken = await bcrypt.compare(
         refreshToken,
-        user.refreshTokens,
+        user.refreshToken,
       );
 
       if (!isValidRefreshToken)
@@ -191,7 +191,7 @@ export class AuthService {
     await this.prisma.user.update({
       where: { id: user.id },
       data: {
-        refreshTokens: await bcrypt.hash(refreshToken, 10),
+        refreshToken: await bcrypt.hash(refreshToken, 10),
       },
     });
 
@@ -210,98 +210,73 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
-  // async generateRefreshToken(userId: string) {
-  //   const refreshToken = crypto.randomBytes(64).toString('hex');
-  //   const expiresAt = new Date();
-  //   expiresAt.setDate(expiresAt.getDate() + 30);
-  //   await this.prisma.refreshTokens.create({
-  //     data: { token: refreshToken, userId, expiresAt },
-  //   });
-  //   return refreshToken;
-  // }
-
-  // async renewAccessToken(refreshToken: string) {
-  //   const storedToken = await this.prisma.refreshTokens.findUnique({
-  //     where: { token: refreshToken },
-  //   });
-
-  //   if (!storedToken || storedToken.expiresAt < new Date()) {
-  //     throw new BadRequestException('Invalid or expired refresh token');
-  //   }
-
-  //   const user = await this.prisma.user.findUnique({
-  //     where: { id: storedToken.userId },
-  //   });
-
-  //   const newAccessToken = this.jwtService.sign({
-  //     email: user.email,
-  //     userId: user.id,
-  //   });
-  //   return { accessToken: newAccessToken };
-  // }
-
   //TODO: MODIFICAR ESTE CODIGO DEL RESET PASSWORD
-  // async forgotPassword(email: LoginDto['email']) {
-  //   // esta funcion se va a hacer cargo de mandar el codigo a su correo del usuario
-  //   const userEmail = await this.prisma.user.findUnique({
-  //     where: { email: email },
-  //   });
+  async forgotPassword(email: LoginDto['email']) {
+    // esta funcion se va a hacer cargo de mandar el codigo a su correo del usuario
+    const userEmail = await this.prisma.user.findUnique({
+      where: { email: email },
+    });
 
-  //   if (!userEmail)
-  //     throw new BadRequestException(
-  //       'User not found, you might want to create one',
-  //     );
+    if (!userEmail)
+      throw new BadRequestException(
+        'User not found, you might want to create an account',
+      );
 
-  //   //creamos el codigo de recuperacion
-  //   const token = crypto.randomBytes(4).toString('hex');
-  //   const tokenExpiration = new Date();
-  //   tokenExpiration.setHours(tokenExpiration.getHours() + 1); // expira en una hora
+    //creamos el codigo de recuperacion
+    const token = crypto.randomBytes(3).toString('hex');
+    const tokenExpiration = new Date();
+    tokenExpiration.setHours(tokenExpiration.getHours() + 1); // expira en una hora
 
-  //   await this.prisma.user.update({
-  //     where: { email },
-  //     data: {
-  //       expirationToken: token,
-  //       expirationTokenDate: tokenExpiration,
-  //     },
-  //   });
+    await this.prisma.user.update({
+      where: { id: userEmail.id },
+      data: {
+        resetPasswordToken: await bcrypt.hash(token, 10),
+        resetPasswordTokenExpiresAt: tokenExpiration,
+      },
+    });
 
-  //   return await this.mailService.sendEmail({
-  //     to: email,
-  //     subject: 'Password reset',
-  //     text: `Your password reset code is: ${token}`,
-  //   });
-  // }
+    return await this.mailService.sendEmail({
+      to: email,
+      subject: 'Password reset',
+      text: `Your password reset code is: ${token}`,
+    });
+  }
 
-  // async resetPassword(email: string, token: string, newPassword: string) {
-  //   const user = await this.prisma.user.findUnique({
-  //     where: { email },
-  //   });
+  async resetPassword(email: string, token: string, newPassword: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
 
-  //   if (!user) {
-  //     throw new BadRequestException('Invalid email');
-  //   }
+    if (!user) {
+      throw new BadRequestException('Invalid email');
+    }
 
-  //   if (user.expirationToken !== token) {
-  //     throw new BadRequestException('Invalid token, try again');
-  //   }
+    const validToken = bcrypt.compare(token, user.resetPasswordToken);
 
-  //   const today = new Date();
-  //   if (user.expirationTokenDate && today > user.expirationTokenDate) {
-  //     throw new BadRequestException('Token expired, try again');
-  //   }
+    if (!validToken) {
+      throw new BadRequestException('Invalid token, try again');
+    }
 
-  //   const newPasswordHashed = await bcrypt.hash(newPassword, 10);
-  //   await this.prisma.user.update({
-  //     where: {
-  //       email,
-  //     },
-  //     data: {
-  //       password: newPasswordHashed,
-  //       expirationTokenDate: null, // limpiamos el token de expiracion
-  //       expirationToken: null, // limpiamos el token
-  //     },
-  //   });
+    const today = new Date();
+    if (
+      user.resetPasswordTokenExpiresAt &&
+      today > user.resetPasswordTokenExpiresAt
+    ) {
+      throw new BadRequestException('Token expired, try again');
+    }
 
-  //   return { msg: 'Password updated successfully' };
-  // }
+    const newPasswordHashed = await bcrypt.hash(newPassword, 10);
+    await this.prisma.user.update({
+      where: {
+        email,
+      },
+      data: {
+        password: newPasswordHashed,
+        resetPasswordTokenExpiresAt: null, // limpiamos el token de expiracion
+        resetPasswordToken: null, // limpiamos el token
+      },
+    });
+
+    return { msg: 'Password updated successfully' };
+  }
 }
