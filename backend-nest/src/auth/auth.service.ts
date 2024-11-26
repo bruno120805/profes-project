@@ -207,7 +207,7 @@ export class AuthService {
       expires: expiresRefreshToken,
     });
 
-    return { accessToken, refreshToken };
+    return { msg: 'Login successful' };
   }
 
   async forgotPassword(email: LoginDto['email']) {

@@ -7,7 +7,6 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
-import { Throttle } from '@nestjs/throttler';
 import { User } from '@prisma/client';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
@@ -18,6 +17,7 @@ import { UserDetails } from './dto/user-details.dto';
 import { GoogleAuthGuard } from './guard/google.guard';
 import { JwtRefreshAuthGuard } from './guard/jwt-refresh.guard';
 import { LocalAuthGuard } from './guard/local-auth.guard';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 
 @Controller('auth')
 export class AuthController {
@@ -69,7 +69,8 @@ export class AuthController {
     return this.authService.login(user, response);
   }
 
-  @Throttle({ default: { limit: 3, ttl: 1000 } })
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { limit: 2, ttl: 5000, blockDuration: 10000 } })
   @Post('forgot-password')
   forgotPassword(@Body('email') email: LoginDto['email']) {
     return this.authService.forgotPassword(email);

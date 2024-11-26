@@ -4,7 +4,6 @@ import * as session from 'express-session';
 import * as passport from 'passport';
 import { AppModule } from './app.module';
 import * as cookieParser from 'cookie-parser';
-import { ThrottlerGuard } from '@nestjs/throttler';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -17,8 +16,6 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   );
-
-  app.useGlobalGuards(app.get(ThrottlerGuard));
 
   app.use(cookieParser());
 

@@ -19,13 +19,16 @@ import { Request } from 'express';
 import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
 import { CreateNoteDto } from './dto/create-note.dto';
 import { NotesService } from './notes.service';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 
 @Controller('notes')
 export class NotesController {
   constructor(private readonly notesService: NotesService) {}
 
   //SUBE VARIOS ARCHIVOS
-  @UseGuards(JwtAuthGuard)
+
+  @UseGuards(JwtAuthGuard, ThrottlerGuard)
+  @Throttle({ default: { ttl: 5000, limit: 1, blockDuration: 10000 } })
   @Post(':professorId/creates-note')
   @UseInterceptors(
     FilesInterceptor('files', 5, {
