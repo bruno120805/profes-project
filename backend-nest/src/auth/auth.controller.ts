@@ -22,7 +22,7 @@ import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
-  //TODO: FIX THE REDIRECT URL, TRY AGAIN LATER
+
   @UseGuards(GoogleAuthGuard)
   @Get('google/login')
   handleLogin() {

@@ -22,6 +22,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.691.0",
     "@aws-sdk/s3-request-presigner": "^3.691.0",
+    "@nestjs/axios": "^3.1.2",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.3.0",
     "@nestjs/core": "^10.0.0",
@@ -33,6 +34,7 @@
     "@nestlab/google-recaptcha": "^3.8.0",
     "@prisma/client": "^5.21.1",
     "@types/cookie-parser": "^1.4.7",
+    "axios": "^1.7.8",
     "bcrypt": "^5.1.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
@@ -43,6 +45,7 @@
     "joi": "^17.13.3",
     "multer-s3": "^3.0.1",
     "nodemailer": "^6.9.16",
+    "openai": "^4.73.1",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "passport-jwt": "^4.0.1",
@@ -98,5 +101,6 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
-  }
+  },
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }
