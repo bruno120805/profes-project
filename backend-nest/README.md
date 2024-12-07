@@ -20,9 +20,10 @@
 
 
 ### Search
-- `POST /api/search?buscar=Profesores&q=<nombre-profesor>` - requiere estar autenticado para crear post, buscar profesores
-- `POST /api/search?buscar=Escuelas&q=<nombre-escuela>` - requiere estar autenticado para crear post, buscar escuelas
-
+- `POST /api/search?buscar=Profesores&q=<nombre-profesor>` - buscar profesores
+- `POST /api/search?buscar=Escuelas&q=<nombre-escuela>` -  buscar escuelas
+- `GET /api/search?profesores/:schoolId?page=<num-pagina>&limit=<limite>` -  Obtenter todos los profesores de una escuela
+- `GET /api/search/profesor/:professorId` -  Buscar a profesor
 
 
 
