@@ -3,11 +3,6 @@
 </p>
 
 
-# watch mode
-$ yarn run start:dev
-
-
-
 ## API Endpoints
 
 ### Authentication
@@ -22,17 +17,12 @@ $ yarn run start:dev
 
 ### Posts
 - `POST /api/` - requiere estar autenticado para crear post
-- `GET /products/:id` - Get product by ID
-- `POST /products` - Create a new product
-- `PUT /products/:id` - Update product by ID
-- `DELETE /products/:id` - Delete product by ID
+
 
 ### Search
 - `POST /api/search?buscar=Profesores&q=<nombre-profesor>` - requiere estar autenticado para crear post, buscar profesores
 - `POST /api/search?buscar=Escuelas&q=<nombre-escuela>` - requiere estar autenticado para crear post, buscar escuelas
-- `POST /products` - Create a new product
-- `PUT /products/:id` - Update product by ID
-- `DELETE /products/:id` - Delete product by ID
+
 
 
 
