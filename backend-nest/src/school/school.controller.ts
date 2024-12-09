@@ -23,11 +23,6 @@ export class SchoolController {
     return this.schoolService.create(createSchoolDto);
   }
 
-  @Get()
-  findAll() {
-    return this.schoolService.findAll();
-  }
-
   @Get(':schoolId')
   findOne(@Param('schoolId', ParseUUIDPipe) id: string) {
     return this.schoolService.findOne(id);

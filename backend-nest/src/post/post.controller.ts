@@ -41,8 +41,10 @@ export class PostController {
     return this.postService.update(+id, updatePostDto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.postService.remove(+id);
+  remove(@Param('id') id: string, @Req() req: Request) {
+    const userId = req.user['userId'];
+    return this.postService.remove(id, userId);
   }
 }
