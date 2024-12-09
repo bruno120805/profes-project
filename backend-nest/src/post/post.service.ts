@@ -1,7 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { InternalServerError } from 'openai';
 
 @Injectable()
 export class PostService {
@@ -82,14 +87,30 @@ export class PostService {
   }
 
   async remove(id: string, userId: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-    });
+    try {
+      const postExists = await this.prisma.post.findUnique({
+        where: { id },
+      });
 
-    if (!user) {
-      throw new Error('User not found');
+      if (!postExists) throw new BadRequestException('Post not found');
+
+      const userPost = await this.prisma.post.findUnique({
+        where: { id },
+      });
+
+      if (userId !== userPost.authorId)
+        throw new BadRequestException("You can't delete this post");
+
+      await this.prisma.post.delete({
+        where: { id },
+      });
+
+      return 'Post deleted successfully';
+    } catch (error) {
+      if (error instanceof BadRequestException)
+        throw new BadRequestException(error.message);
+
+      throw new InternalServerErrorException(error.message);
     }
-
-    
   }
 }
