@@ -81,7 +81,15 @@ export class PostService {
     return `This action updates a #${id} post`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} post`;
+  async remove(id: string, userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    
   }
 }
