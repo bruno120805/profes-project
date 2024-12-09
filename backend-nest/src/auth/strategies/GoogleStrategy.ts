@@ -23,6 +23,8 @@ export class GoogleStrategy extends PassportStrategy(Strategy) {
       displayName: profile.displayName,
     });
 
+    console.log(user);
+
     return user || null;
   }
 }

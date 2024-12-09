@@ -14,33 +14,47 @@ datasource db {
 }
 
 model User {
-  id            String         @id @default(uuid())
-  displayName   String
-  email         String         @unique
-  password      String?
-  refreshTokens RefreshToken[]
-  post          Post[]
-  roles         String[]       @default(["user"])
-  notes         Notes[]
+  id                          String    @id @default(uuid())
+  displayName                 String
+  email                       String    @unique
+  password                    String?
+  resetPasswordToken          String?
+  resetPasswordTokenExpiresAt DateTime?
+  refreshToken                String?
+  post                        Post[]
+  roles                       String[]  @default(["user"])
+  notes                       Notes[]
+  likes                       Likes[]
 }
 
-model RefreshToken {
-  id        String   @id @default(uuid())
-  token     String   @unique
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  createdAt DateTime @default(now())
-  expiresAt DateTime
+model Likes {
+  id     String @id @default(uuid())
+  userId String
+  noteId String
+  user   User   @relation(fields: [userId], references: [id])
+  note   Notes  @relation(fields: [noteId], references: [id])
+
+  @@unique([userId, noteId])
 }
 
 model Notes {
-  id        String   @id @default(uuid())
-  subject   String
-  title     String
-  content   String
-  createdAt DateTime @default(now())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  id String @id @default(uuid())
+
+  subject String
+  title   String
+  content String
+
+  filesUrls String[]
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  Proffessor   Proffessor? @relation(fields: [proffessorId], references: [id])
+  proffessorId String?
+
+  createdAt    DateTime @default(now())
+  likes        Likes[]
+  likesCounter Int      @default(0)
 }
 
 model Post {
@@ -80,4 +94,5 @@ model Proffessor {
   updatedAt DateTime @updatedAt
 
   posts Post[] // Relación uno a muchos con Post
+  notes Notes[] // Relación uno a muchos con Notes
 }

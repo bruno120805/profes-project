@@ -1,20 +1,67 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { UserDetails } from './dto/user-details.dto';
-import * as bcrypt from 'bcrypt';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { TokenDto } from './dto/token.dto';
+import { User } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
+import { Response } from 'express';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { MailService } from 'src/services/mail-service.service';
+import { LoginDto } from './dto/login.dto';
+import { TokenDto } from './dto/token.dto';
+import { UserDetails } from './dto/user-details.dto';
+import { TokenPayload } from './interfaces/token-payload.interface';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
+    private readonly mailService: MailService,
+    private readonly configService: ConfigService,
   ) {}
 
   signToken(payload: TokenDto) {
     return this.jwtService.sign(payload);
+  }
+
+  async verifyRefreshToken(refreshToken: string, userId: string) {
+    try {
+      const user = await this.findUserById(userId);
+      const isValidRefreshToken = await bcrypt.compare(
+        refreshToken,
+        user.refreshToken,
+      );
+
+      if (!isValidRefreshToken)
+        throw new UnauthorizedException('Invalid credentials');
+
+      return user;
+    } catch (error) {
+      throw new UnauthorizedException('Refresh token is not valid');
+    }
+  }
+
+  async verifyUser(email: string, password: string) {
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: { email },
+      });
+
+      const authenticated = await bcrypt.compare(password, user.password);
+
+      if (!authenticated) throw new NotFoundException('Invalid credentials');
+
+      return user;
+    } catch (error) {
+      throw new UnauthorizedException('Credential are not valid');
+    }
   }
 
   async validateUser(userDetails: UserDetails) {
@@ -46,10 +93,12 @@ export class AuthService {
       where: { id },
     });
 
+    if (!user) throw new NotFoundException('User not found');
+
     return user;
   }
 
-  async registerUser(userDto: UserDetails) {
+  async registerUser(userDto: UserDetails, response: Response) {
     try {
       const { password, email } = userDto;
       const existingUser = await this.prisma.user.findUnique({
@@ -58,7 +107,7 @@ export class AuthService {
       if (existingUser) {
         throw new BadRequestException('This email is already registered');
       }
-      if (!userDto.password) {
+      if (!password) {
         throw new BadRequestException('Password is required');
       }
       const hashedPassword = await bcrypt.hash(password, 10);
@@ -67,76 +116,166 @@ export class AuthService {
         data: { ...userDto, password: hashedPassword },
       });
 
-      const refreshToken = await this.generateRefreshToken(user.id);
+      const tokenPayload: TokenPayload = {
+        userId: user.id,
+      };
+
+      const accessToken = this.jwtService.sign(tokenPayload, {
+        secret: this.configService.getOrThrow('JWT_ACCESS_TOKEN_SECRET'),
+        expiresIn: `${this.configService.getOrThrow('JWT_ACCESS_TOKEN_EXPIRATION_MS')}ms`,
+      });
+
+      // Configura la cookie con el token
+      const expiresAccessToken = new Date();
+      expiresAccessToken.setMilliseconds(
+        expiresAccessToken.getTime() +
+          parseInt(
+            this.configService.getOrThrow<string>(
+              'JWT_ACCESS_TOKEN_EXPIRATION_MS',
+            ),
+          ),
+      );
+
+      response.cookie('Authentication', accessToken, {
+        httpOnly: true,
+        secure: this.configService.get('NODE_ENV') === 'production',
+        expires: expiresAccessToken,
+      });
 
       return {
         user,
-        accessToken: this.jwtService.sign({
-          email: user.email,
-          userId: user.id,
-        }),
-        refreshToken,
       };
     } catch (error) {
       if (error instanceof BadRequestException) {
-        throw error;
+        throw new BadRequestException(error.message);
       }
-      throw new BadRequestException(error.message);
+      throw new InternalServerErrorException(error.message);
     }
   }
 
-  async login(email: string, password: string) {
-    const user = await this.prisma.user.findUnique({ where: { email } });
+  async login(user: User, response: Response) {
+    const expiresAccessToken = new Date();
+    expiresAccessToken.setMilliseconds(
+      expiresAccessToken.getTime() +
+        parseInt(
+          this.configService.getOrThrow<string>(
+            'JWT_ACCESS_TOKEN_EXPIRATION_MS',
+          ),
+        ),
+    );
 
-    if (!user || !user.password) {
-      throw new BadRequestException('Invalid credentials');
-    }
+    const expiresRefreshToken = new Date();
+    expiresRefreshToken.setMilliseconds(
+      expiresRefreshToken.getTime() +
+        parseInt(
+          this.configService.getOrThrow<string>(
+            'JWT_REFRESH_TOKEN_EXPIRATION_MS',
+          ),
+        ),
+    );
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-
-    if (!isPasswordValid) {
-      throw new BadRequestException('Invalid credentials');
-    }
-
-    const refreshToken = await this.generateRefreshToken(user.id);
-
-    return {
-      user,
-      accessToken: this.jwtService.sign({
-        email: user.email,
-        userId: user.id,
-      }),
-      refreshToken,
-    };
-  }
-
-  async generateRefreshToken(userId: string) {
-    const refreshToken = crypto.randomBytes(64).toString('hex');
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 30);
-    await this.prisma.refreshToken.create({
-      data: { token: refreshToken, userId, expiresAt },
-    });
-    return refreshToken;
-  }
-
-  async renewAccessToken(refreshToken: string) {
-    const storedToken = await this.prisma.refreshToken.findUnique({
-      where: { token: refreshToken },
-    });
-
-    if (!storedToken || storedToken.expiresAt < new Date()) {
-      throw new BadRequestException('Invalid or expired refresh token');
-    }
-
-    const user = await this.prisma.user.findUnique({
-      where: { id: storedToken.userId },
-    });
-
-    const newAccessToken = this.jwtService.sign({
-      email: user.email,
+    const tokenPayload: TokenPayload = {
       userId: user.id,
+    };
+
+    const accessToken = this.jwtService.sign(tokenPayload, {
+      secret: this.configService.getOrThrow('JWT_ACCESS_TOKEN_SECRET'),
+      expiresIn: `${this.configService.getOrThrow('JWT_ACCESS_TOKEN_EXPIRATION_MS')}ms`,
     });
-    return { accessToken: newAccessToken };
+
+    const refreshToken = this.jwtService.sign(tokenPayload, {
+      secret: this.configService.getOrThrow('JWT_REFRESH_TOKEN_SECRET'),
+      expiresIn: `${this.configService.getOrThrow('JWT_REFRESH_TOKEN_EXPIRATION_MS')}ms`,
+    });
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        refreshToken: await bcrypt.hash(refreshToken, 10),
+      },
+    });
+
+    response.cookie('Authentication', accessToken, {
+      httpOnly: true,
+      secure: this.configService.get('NODE_ENV') === 'production',
+      expires: expiresAccessToken,
+    });
+
+    response.cookie('Refresh', refreshToken, {
+      httpOnly: true,
+      secure: this.configService.get('NODE_ENV') === 'production',
+      expires: expiresRefreshToken,
+    });
+
+    return { msg: 'Login successful' };
+  }
+
+  async forgotPassword(email: LoginDto['email']) {
+    // esta funcion se va a hacer cargo de mandar el codigo a su correo del usuario
+    const userEmail = await this.prisma.user.findUnique({
+      where: { email: email },
+    });
+
+    if (!userEmail)
+      throw new BadRequestException(
+        'User not found, you might want to create an account',
+      );
+
+    //creamos el codigo de recuperacion
+    const token = crypto.randomBytes(3).toString('hex');
+    const tokenExpiration = new Date();
+    tokenExpiration.setHours(tokenExpiration.getHours() + 1); // expira en una hora
+
+    await this.prisma.user.update({
+      where: { id: userEmail.id },
+      data: {
+        resetPasswordToken: await bcrypt.hash(token, 10),
+        resetPasswordTokenExpiresAt: tokenExpiration,
+      },
+    });
+
+    return await this.mailService.sendEmail({
+      to: email,
+      subject: 'Password reset',
+      text: `Your password reset code is: ${token}`,
+    });
+  }
+
+  async resetPassword(email: string, token: string, newPassword: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      throw new BadRequestException('Invalid email');
+    }
+
+    const validToken = bcrypt.compare(token, user.resetPasswordToken);
+
+    if (!validToken) {
+      throw new BadRequestException('Invalid token, try again');
+    }
+
+    const today = new Date();
+    if (
+      user.resetPasswordTokenExpiresAt &&
+      today > user.resetPasswordTokenExpiresAt
+    ) {
+      throw new BadRequestException('Token expired, try again');
+    }
+
+    const newPasswordHashed = await bcrypt.hash(newPassword, 10);
+    await this.prisma.user.update({
+      where: {
+        email,
+      },
+      data: {
+        password: newPasswordHashed,
+        resetPasswordTokenExpiresAt: null, // limpiamos el token de expiracion
+        resetPasswordToken: null, // limpiamos el token
+      },
+    });
+
+    return { msg: 'Password updated successfully' };
   }
 }
