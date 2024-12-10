@@ -28,7 +28,7 @@ export class NotesController {
   //SUBE VARIOS ARCHIVOS
 
   @UseGuards(JwtAuthGuard, ThrottlerGuard)
-  @Throttle({ default: { ttl: 5000, limit: 1, blockDuration: 10000 } })
+  @Throttle({ default: { ttl: 5000, limit: 3, blockDuration: 10000 } })
   @Post(':professorId/creates-note')
   @UseInterceptors(
     FilesInterceptor('files', 5, {

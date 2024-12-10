@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateSchoolDto } from './dto/create-school.dto';
 import { UpdateSchoolDto } from './dto/update-school.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -7,9 +11,21 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class SchoolService {
   constructor(private readonly prisma: PrismaService) {}
   async create(createSchoolDto: CreateSchoolDto) {
+    const schoolExists = await this.prisma.school.findFirst({
+      where: {
+        name: {
+          equals: createSchoolDto.name.replaceAll(' ', '+').toLowerCase(),
+        },
+      },
+    });
+
+    if (schoolExists) {
+      throw new BadRequestException('Esta escuela ya existe');
+    }
+
     const school = await this.prisma.school.create({
       data: {
-        name: createSchoolDto.name.replaceAll(' ', '+'),
+        name: createSchoolDto.name.replaceAll(' ', '+').toLowerCase(),
       },
     });
 
@@ -25,6 +41,9 @@ export class SchoolService {
       const school = await this.prisma.school.findUnique({
         where: {
           id: id,
+        },
+        select: {
+          Proffessor: true,
         },
       });
 

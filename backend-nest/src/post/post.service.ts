@@ -3,16 +3,25 @@ import {
   Injectable,
   InternalServerErrorException,
 } from '@nestjs/common';
-import { CreatePostDto } from './dto/create-post.dto';
-import { UpdatePostDto } from './dto/update-post.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { InternalServerError } from 'openai';
+import { CreatePostDto } from './dto/create-post.dto';
 
 @Injectable()
 export class PostService {
   constructor(private readonly prisma: PrismaService) {}
-  async create(createPostDto: CreatePostDto, userId: string) {
-    const { proffessorName, schoolName } = createPostDto;
+  async create(
+    createPostDto: CreatePostDto,
+    userId: string,
+    professorId: string,
+  ) {
+    const professorExists = await this.prisma.proffessor.findUnique({
+      where: { id: professorId },
+    });
+
+    if (!professorExists)
+      throw new BadRequestException('Profesor no encontrado');
+
+    const { schoolName } = createPostDto;
 
     const post = await this.prisma.$transaction(async (prisma) => {
       let school = await prisma.school.findFirst({
@@ -27,29 +36,11 @@ export class PostService {
         });
       }
 
-      // Verificamos si el profesor ya existe
-      let professor = await prisma.proffessor.findFirst({
-        where: { name: proffessorName.replaceAll(' ', '+').toLowerCase() },
-      });
-
-      // Si el profesor no existe, lo creamos
-      if (!professor) {
-        professor = await prisma.proffessor.create({
-          data: {
-            name: proffessorName.replaceAll(' ', '+').toLowerCase(),
-            subject: createPostDto.subject,
-            school: {
-              connect: { id: school.id },
-            },
-          },
-        });
-      }
-
-      // Creamos el post y asociamos el `professorId` recién creado o encontrado
-      const post = await prisma.post.create({
+      const posts = await prisma.post.create({
         data: {
           title: createPostDto.title,
           content: createPostDto.content,
+          isAnonymous: createPostDto.isAnonymous || false,
           author: {
             connect: { id: userId },
           },
@@ -57,33 +48,14 @@ export class PostService {
             connect: { id: school.id },
           },
           proffessor: {
-            connect: { id: professor.id },
-          },
-        },
-        include: {
-          author: {
-            select: {
-              displayName: true,
-            },
+            connect: { id: professorId },
           },
         },
       });
 
-      return post;
+      return posts;
     });
     return post;
-  }
-
-  findAll() {
-    return `This action returns all post`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} post`;
-  }
-
-  update(id: number, updatePostDto: UpdatePostDto) {
-    return `This action updates a #${id} post`;
   }
 
   async remove(id: string, userId: string) {

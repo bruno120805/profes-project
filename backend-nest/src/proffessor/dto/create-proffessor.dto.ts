@@ -4,6 +4,6 @@ export class CreateProffessorDto {
   @IsString()
   name: string;
 
-  @IsString()
-  subject: string;
+  @IsString({ each: true })
+  subject: string[];
 }

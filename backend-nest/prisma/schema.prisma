@@ -58,9 +58,10 @@ model Notes {
 }
 
 model Post {
-  id      String @id @default(uuid())
-  title   String
-  content String
+  id          String   @id @default(uuid())
+  title       String
+  content     String
+  isAnonymous Boolean @default(false)
 
   school   School @relation(fields: [schoolId], references: [id])
   schoolId String
@@ -83,9 +84,9 @@ model School {
 }
 
 model Proffessor {
-  id      String @id @default(uuid())
+  id      String   @id @default(uuid())
   name    String
-  subject String
+  subject String[]
 
   schoolId String
   school   School @relation(fields: [schoolId], references: [id])
