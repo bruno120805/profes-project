@@ -29,7 +29,7 @@ export class NotesController {
 
   @UseGuards(JwtAuthGuard, ThrottlerGuard)
   @Throttle({ default: { ttl: 5000, limit: 3, blockDuration: 10000 } })
-  @Post(':professorId/creates-note')
+  @Post(':professorId/create-note')
   @UseInterceptors(
     FilesInterceptor('files', 5, {
       limits: {
@@ -50,9 +50,11 @@ export class NotesController {
       files.map((file) => file.size).reduce((a, b) => a + b, 0) >
       1024 * 1024 * 2
     )
-      throw new BadRequestException('Files too large, max size 2MB');
+      throw new BadRequestException(
+        'El archivo es muy pesado, peso maximo del archivo es de permitido 2MB',
+      );
 
-    if (!files) throw new BadRequestException('No files uploaded');
+    if (!files) throw new BadRequestException('No se han subido archivos');
     return this.notesService.uploadFilesNotes(
       files,
       createNoteDto,
@@ -98,8 +100,10 @@ export class NotesController {
   //   return this.notesService.update(+id, updateNoteDto);
   // }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':noteId')
-  remove(@Param('noteId', ParseUUIDPipe) id: string) {
-    return this.notesService.remove(id);
+  remove(@Param('noteId', ParseUUIDPipe) noteId: string, @Req() req: Request) {
+    const userId = req.user['userId'];
+    return this.notesService.remove(noteId, userId);
   }
 }

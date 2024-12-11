@@ -26,7 +26,13 @@
 - `POST /api/school/` - requiere estar autenticado para crear escuela
 - `GET /api/school/:schoolId` - Obtiene una escuela
 
-### POST
+### Notes
+
+- `POST /api/notes/:professorId/create-note` - requiere estar autenticado para crear el apunte, sube archivos a AWS S3
+- `DELETE /api/notes/:noteId` - requiere estar autenticado para eliminar apunte, elimina de la base de datos y del Bucket S3
+
+
+### Post
 
 - `POST /api/post/:professorId` - requiere estar autenticado para crear post
 - `DELETE /api/post/:professorId` - requiere estar autenticado para eliminar post
@@ -38,18 +44,4 @@
 - `GET /api/search?profesores/:schoolId?page=<num-pagina>&limit=<limite>` - Obtenter todos los profesores de una escuela
 - `GET /api/search/profesor/:professorId` - Buscar a profesor
 
-## Support
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](LICENSE).
-
-# nestjs-auth-good

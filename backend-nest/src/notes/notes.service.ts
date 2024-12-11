@@ -162,10 +162,18 @@ export class NotesService {
     }
   };
 
-  async remove(id: string) {
+  async remove(noteId: string, userId: string) {
+    // checar si el usuario es el dueño de la nota
+    const isOwner = await this.prisma.notes.findFirst({
+      where: { id: noteId },
+    });
+
+    if (isOwner.userId !== userId)
+      throw new ConflictException('You are not the owner of this note');
+
     // Find the note
     const notes = await this.prisma.notes.findUnique({
-      where: { id },
+      where: { id: noteId },
     });
 
     if (!notes) throw new NotFoundException('Note not found');
@@ -174,7 +182,7 @@ export class NotesService {
     await this.deleteFiles(filesUrls);
 
     await this.prisma.notes.delete({
-      where: { id },
+      where: { id: noteId },
     });
 
     return 'Note deleted successfully';
