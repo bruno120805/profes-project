@@ -7,16 +7,19 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { CreateSchoolDto } from './dto/create-school.dto';
 import { UpdateSchoolDto } from './dto/update-school.dto';
 import { SchoolService } from './school.service';
 import { Auth } from 'src/auth/decorators/auth.decorator';
+import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
 
 @Controller('school')
 export class SchoolController {
   constructor(private readonly schoolService: SchoolService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Auth('admin')
   @Post()
   create(@Body() createSchoolDto: CreateSchoolDto) {

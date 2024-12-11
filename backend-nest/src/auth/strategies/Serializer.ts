@@ -14,6 +14,10 @@ export class SessionSerializer extends PassportSerializer {
     done(null, user);
   }
   async deserializeUser(payload: User, done) {
+    if (!payload.id) {
+      return done(new Error('User ID is undefined'), false);
+    }
+
     const user = await this.authService.findUserById(payload.id);
     return user ? done(null, user) : done(null, false);
   }

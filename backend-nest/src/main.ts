@@ -1,4 +1,4 @@
-import { ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import * as session from 'express-session';
 import * as passport from 'passport';
@@ -7,6 +7,7 @@ import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const logger = new Logger();
 
   app.setGlobalPrefix('api');
 
@@ -35,6 +36,10 @@ async function bootstrap() {
   app.use(passport.initialize());
   app.use(passport.session());
 
-  await app.listen(process.env.PORT || 3000);
+  const PORT = process.env.PORT || 3000;
+
+  await app.listen(PORT);
+
+  logger.log('Application listening on port: ' + PORT);
 }
 bootstrap();

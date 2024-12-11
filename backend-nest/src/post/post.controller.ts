@@ -29,8 +29,8 @@ export class PostController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Delete(':id')
-  remove(@Param('id', ParseUUIDPipe) id: string, @Req() req: Request) {
+  @Delete(':professorId')
+  remove(@Param('professorId', ParseUUIDPipe) id: string, @Req() req: Request) {
     const userId = req.user['userId'];
     return this.postService.remove(id, userId);
   }

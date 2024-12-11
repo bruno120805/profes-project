@@ -8,10 +8,10 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
+import { Auth } from 'src/auth/decorators/auth.decorator';
 import { CreateProffessorDto } from './dto/create-proffessor.dto';
 import { UpdateProffessorDto } from './dto/update-proffessor.dto';
 import { ProffessorService } from './proffessor.service';
-import { Auth } from 'src/auth/decorators/auth.decorator';
 
 @Controller('profesores')
 export class ProffessorController {
@@ -32,17 +32,17 @@ export class ProffessorController {
   }
 
   @Auth('admin')
-  @Patch(':id')
+  @Patch(':professorId')
   update(
-    @Param('id') id: string,
+    @Param('professorId') id: string,
     @Body() updateProffessorDto: UpdateProffessorDto,
   ) {
     return this.proffessorService.update(id, updateProffessorDto);
   }
 
   @Auth('admin')
-  @Delete(':id')
-  remove(@Param('id') id: string) {
+  @Delete(':professorId')
+  remove(@Param('professorId') id: string) {
     return this.proffessorService.remove(id);
   }
 }
