@@ -46,6 +46,11 @@ export class NotesController {
   ) {
     const userId = req.user['userId'];
 
+    // Validar que se suban archivos
+    if (!files || files.length === 0) {
+      throw new BadRequestException('Debes subir al menos un archivo.');
+    }
+
     if (
       files.map((file) => file.size).reduce((a, b) => a + b, 0) >
       1024 * 1024 * 2
@@ -54,7 +59,6 @@ export class NotesController {
         'El archivo es muy pesado, peso maximo del archivo es de permitido 2MB',
       );
 
-    if (!files) throw new BadRequestException('No se han subido archivos');
     return this.notesService.uploadFilesNotes(
       files,
       createNoteDto,

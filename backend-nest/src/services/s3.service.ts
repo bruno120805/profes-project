@@ -36,7 +36,8 @@ export class S3Service {
   async upload(file: Express.Multer.File, key: string) {
     const fileExtension = this.getFileExtension(file.mimetype);
 
-    if (!fileExtension) throw new BadRequestException('Unsupported file type');
+    if (!fileExtension)
+      throw new BadRequestException('No se soporta este tipo de archivo');
 
     const command = new PutObjectCommand({
       Bucket: this.bucketName,
