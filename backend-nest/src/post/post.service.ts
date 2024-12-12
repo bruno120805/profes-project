@@ -5,6 +5,9 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreatePostDto } from './dto/create-post.dto';
+import { RatingEnum } from './enums/rating.enum';
+import { Difficulty, Rating } from '@prisma/client';
+import { DifficultyEnum } from './enums/difficulty.enum';
 
 @Injectable()
 export class PostService {
@@ -36,11 +39,40 @@ export class PostService {
         });
       }
 
+      // Mapea el RatingEnum a Prisma Rating
+      const mapRatingEnumToPrisma = (rating: RatingEnum): Rating => {
+        switch (rating) {
+          case RatingEnum.Excellent:
+            return Rating.Excellent;
+          case RatingEnum.Good:
+            return Rating.Good;
+          case RatingEnum.Bad:
+            return Rating.Bad;
+        }
+      };
+
+      // Mapea el DifficultyEnum a Prisma Difficulty
+      const mapDifficultyEnumToPrisma = (
+        difficulty: DifficultyEnum,
+      ): Difficulty => {
+        switch (difficulty) {
+          case DifficultyEnum.Easy:
+            return Difficulty.Easy;
+          case DifficultyEnum.Regular:
+            return Difficulty.Regular;
+          case DifficultyEnum.Hard:
+            return Difficulty.Hard;
+        }
+      };
+
       const posts = await prisma.post.create({
         data: {
           title: createPostDto.title,
           content: createPostDto.content,
           isAnonymous: createPostDto.isAnonymous || false,
+          wouldRetake: createPostDto.wouldRetake,
+          rating: mapRatingEnumToPrisma(createPostDto.rating),
+          difficulty: mapDifficultyEnumToPrisma(createPostDto.difficulty),
           author: {
             connect: { id: userId },
           },
@@ -55,6 +87,7 @@ export class PostService {
 
       return posts;
     });
+
     return post;
   }
 

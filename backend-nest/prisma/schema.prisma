@@ -74,6 +74,22 @@ model Post {
 
   proffessor   Proffessor? @relation(fields: [proffessorId], references: [id])
   proffessorId String?
+
+  rating      Rating     @default(Good)
+  difficulty  Difficulty @default(Regular)
+  wouldRetake Boolean    @default(false)
+}
+
+enum Rating {
+  Excellent
+  Good
+  Bad
+}
+
+enum Difficulty {
+  Easy
+  Regular
+  Hard
 }
 
 model School {
