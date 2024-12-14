@@ -12,7 +12,7 @@ import { SearchModule } from './search/search.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
     AuthModule,
     PrismaModule,
     PassportModule.register({
