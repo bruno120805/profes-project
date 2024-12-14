@@ -1,53 +1,60 @@
+import NextImage from "next/image";
 import NextLink from "next/link";
-import { Inter } from 'next/font/google'
 
+import navigation_logo from "./assets/navigation_logo.svg";
 import ContentWrapper from "@/components/ContentWrapper";
 import { buttonVariants } from "@/components/ui/button";
 
-const inter = Inter({ subsets: ['latin'] });
-
-type MainNavigationProps = {
-  children: React.ReactNode,
-}
-
-const MainNavigation = (props: MainNavigationProps) => {
-  const { children } = props;
-
+const MainNavigation = () => {
   return (
     <div className="w-full flex items-center h-[110px] max-xl:p-4">
       <ContentWrapper>
         <ul className="inline-flex mr-auto">
-
           <li>
-            <NextLink href="#">
-              País
+            <NextLink href="/">
+              <NextImage
+                src={navigation_logo.src}
+                alt="Navigation Logo"
+                height={30}
+                width={30}
+              />
             </NextLink>
           </li>
 
           <li>
             <NextLink className="ml-[26px]" href="#">
-              Acerca de
+              País
             </NextLink>
           </li>
 
+          <li>
+            <NextLink className="ml-[26px]" href="/about">
+              Acerca de
+            </NextLink>
+          </li>
         </ul>
         <ul className="inline-flex ml-auto">
           <li>
-            <NextLink className={`${buttonVariants({ variant: "outline" })}`} href="#">
+            <NextLink
+              className={`${buttonVariants({ variant: "outline" })}`}
+              href="#"
+            >
               Iniciar sesión
             </NextLink>
           </li>
 
           <li>
-            <NextLink className={`ml-4 ${buttonVariants({ variant: "default" })}`} href="#">
+            <NextLink
+              className={`ml-4 ${buttonVariants({ variant: "default" })}`}
+              href="#"
+            >
               Crear cuenta
             </NextLink>
           </li>
-
         </ul>
       </ContentWrapper>
     </div>
-  )
-}
+  );
+};
 
-export default MainNavigation
+export default MainNavigation;

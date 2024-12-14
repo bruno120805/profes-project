@@ -1,13 +1,11 @@
-import Hero from "@/components/HomePage/Hero"
-import MainNavigation from "@/components/MainNavigation"
+import Hero from "@/components/HomePage/Hero";
 
 function HomePage() {
   return (
     <div>
-      <MainNavigation> </MainNavigation>
       <Hero />
     </div>
-  )
+  );
 }
 
-export default HomePage
+export default HomePage;

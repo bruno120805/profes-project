@@ -10,9 +10,8 @@
   },
   "dependencies": {
     "@fontsource/inter": "^5.1.0",
-    "@radix-ui/react-dialog": "^1.1.2",
-    "@radix-ui/react-navigation-menu": "^1.2.1",
     "@radix-ui/react-slot": "^1.1.0",
+    "axios": "^1.7.9",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "cmdk": "1.0.0",
@@ -20,6 +19,7 @@
     "next": "15.0.3",
     "react": "19.0.0-rc-66855b96-20241106",
     "react-dom": "19.0.0-rc-66855b96-20241106",
+    "swr": "^2.2.5",
     "tailwind-merge": "^2.5.4",
     "tailwindcss-animate": "^1.0.7"
   },

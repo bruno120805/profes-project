@@ -26,6 +26,6 @@
       "@/components/Link": ["./src/components/Link"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/components/Search/SearchInput.tsx", "src/app/search/page.tsx", "src/app/schools/[id]"],
   "exclude": ["node_modules"]
 }
