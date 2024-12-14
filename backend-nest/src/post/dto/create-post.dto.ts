@@ -16,9 +16,6 @@ export class CreatePostDto {
   @IsBoolean()
   isAnonymous?: boolean;
 
-  @IsString()
-  schoolName: string;
-
   @IsEnum(RatingEnum)
   rating: RatingEnum;
 

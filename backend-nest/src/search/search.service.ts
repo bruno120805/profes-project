@@ -105,6 +105,7 @@ export class SearchService {
             },
           },
           select: {
+            id: true,
             name: true,
           },
         });

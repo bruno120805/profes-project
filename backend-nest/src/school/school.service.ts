@@ -14,7 +14,7 @@ export class SchoolService {
     const schoolExists = await this.prisma.school.findFirst({
       where: {
         name: {
-          equals: createSchoolDto.name.replaceAll(' ', '+').toLowerCase(),
+          equals: createSchoolDto.name.toLowerCase(),
         },
       },
     });
@@ -25,7 +25,7 @@ export class SchoolService {
 
     const school = await this.prisma.school.create({
       data: {
-        name: createSchoolDto.name.replaceAll(' ', '+').toLowerCase(),
+        name: createSchoolDto.name.toLowerCase(),
       },
     });
 
@@ -53,7 +53,9 @@ export class SchoolService {
 
       return school;
     } catch (error) {
-      throw new Error('School not found');
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
     }
   }
 

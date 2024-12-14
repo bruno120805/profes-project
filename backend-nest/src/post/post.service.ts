@@ -24,20 +24,10 @@ export class PostService {
     if (!professorExists)
       throw new BadRequestException('Profesor no encontrado');
 
-    const { schoolName } = createPostDto;
-
     const post = await this.prisma.$transaction(async (prisma) => {
-      let school = await prisma.school.findFirst({
-        where: { name: schoolName.replaceAll(' ', '+').toLowerCase() },
+      const school = await prisma.school.findFirst({
+        where: { id: professorExists.schoolId },
       });
-
-      if (!school) {
-        school = await prisma.school.create({
-          data: {
-            name: schoolName.replaceAll(' ', '+').toLowerCase(),
-          },
-        });
-      }
 
       // Mapea el RatingEnum a Prisma Rating
       const mapRatingEnumToPrisma = (rating: RatingEnum): Rating => {
