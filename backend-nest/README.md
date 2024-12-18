@@ -16,7 +16,7 @@
 
 ### Profesor
 
-- `POST /api/profesores/:professorId` - requiere estar autenticado para crear profesor
+- `POST /api/profesores/:schoolId` - requiere estar autenticado para crear profesor
 - `GET /api/profesores/:professorId` - Obtiene solo un profesor por ID
 - `PATCH /api/profesores/:professorId` - Actualiza informacion del profesor
 - `DELETE /api/profesores/:professorId` - Elimina un profesor 

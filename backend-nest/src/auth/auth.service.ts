@@ -76,6 +76,7 @@ export class AuthService {
     if (user) return user;
 
     console.log('User not found, creating new user');
+
     const newUser = await this.prisma.user.create({
       data: {
         email: userDetails.email,
@@ -85,10 +86,6 @@ export class AuthService {
 
     return {
       newUser,
-      accessToken: this.jwtService.sign({
-        email: userDetails.email,
-        userId: newUser.id,
-      }),
     };
   }
 
