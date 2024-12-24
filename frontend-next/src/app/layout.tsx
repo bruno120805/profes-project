@@ -1,6 +1,7 @@
 import MainNavigation from "@/components/MainNavigation";
 import type { Metadata } from "next";
 import "./globals.css";
+import SessionAuthProvider from "@/context/SessionAuthProvider";
 
 export const metadata: Metadata = {
   title: "Califica tu profesor",
@@ -15,8 +16,10 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body>
-        <MainNavigation />
-        {children}
+        <SessionAuthProvider>
+          <MainNavigation />
+          {children}
+        </SessionAuthProvider>        
       </body>
     </html>
   );

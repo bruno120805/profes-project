@@ -4,6 +4,7 @@ import NextLink from "next/link";
 import navigation_logo from "./assets/navigation_logo.svg";
 import ContentWrapper from "@/components/ContentWrapper";
 import { buttonVariants } from "@/components/ui/button";
+import ButtonAuth from "../Auth/ButtonAuth";
 
 const MainNavigation = () => {
   return (
@@ -35,14 +36,8 @@ const MainNavigation = () => {
         </ul>
         <ul className="inline-flex ml-auto">
           <li>
-            <NextLink
-              className={`${buttonVariants({ variant: "outline" })}`}
-              href="#"
-            >
-              Iniciar sesión
-            </NextLink>
+            <ButtonAuth />
           </li>
-
           <li>
             <NextLink
               className={`ml-4 ${buttonVariants({ variant: "default" })}`}
